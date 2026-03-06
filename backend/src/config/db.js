@@ -21,4 +21,9 @@ function getDB() {
   return db;
 }
 
-module.exports = { connectDB, getDB };
+function getClient() {
+  if (!client) throw new Error('Database not connected. Call connectDB() first.');
+  return client;
+}
+
+module.exports = { connectDB, getDB, getClient };

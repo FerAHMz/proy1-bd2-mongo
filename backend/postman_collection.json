@@ -1,0 +1,616 @@
+{
+  "info": {
+    "name": "Castor's Pizza API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api" },
+    { "key": "restauranteId", "value": "69a74db01d8fd9adda248775" },
+    { "key": "restauranteId2", "value": "69a74db01d8fd9adda24876b" },
+    { "key": "clienteId", "value": "69a74e061d8fd9adda2487db" },
+    { "key": "menuId", "value": "69a75caf1d8fd9adda249b77" },
+    { "key": "menuId2", "value": "69a75cb01d8fd9adda249b80" },
+    { "key": "ordenId", "value": "69a7946a1d8fd9adda254ba5" },
+    { "key": "reviewId", "value": "69a9240c1d8fd9adda262adf" },
+    { "key": "usuarioId", "value": "69a74de31d8fd9adda248777" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{baseUrl}}/health" }
+        }
+      ]
+    },
+    {
+      "name": "Restaurantes",
+      "item": [
+        {
+          "name": "Listar restaurantes (paginación + filtro)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/restaurantes?limit=5&skip=0&sort=nombre&activo=true", "host": ["{{baseUrl}}"], "path": ["restaurantes"], "query": [{"key":"limit","value":"5"},{"key":"skip","value":"0"},{"key":"sort","value":"nombre"},{"key":"activo","value":"true"}] } }
+        },
+        {
+          "name": "Buscar cercanos (geoespacial $near)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/restaurantes/cercanos?lng=-90.52&lat=14.60&maxDist=10000", "host": ["{{baseUrl}}"], "path": ["restaurantes","cercanos"], "query": [{"key":"lng","value":"-90.52"},{"key":"lat","value":"14.60"},{"key":"maxDist","value":"10000"}] } }
+        },
+        {
+          "name": "Obtener uno",
+          "request": { "method": "GET", "url": "{{baseUrl}}/restaurantes/{{restauranteId}}" }
+        },
+        {
+          "name": "Crear 1 restaurante (doc embebido: ubicacion + horario)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/restaurantes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Castor's Pizza - Test Postman\",\n  \"direccion\": \"Zona 10, Ciudad de Guatemala\",\n  \"ubicacion\": {\n    \"type\": \"Point\",\n    \"coordinates\": [-90.5069, 14.6349]\n  },\n  \"telefono\": \"5555-1234\",\n  \"correoContacto\": \"test@castorspizza.com\",\n  \"horario\": {\n    \"apertura\": \"10:00\",\n    \"cierre\": \"22:00\"\n  }\n}" }
+          }
+        },
+        {
+          "name": "Crear varios restaurantes (insertMany)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/restaurantes/muchos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "[\n  {\n    \"nombre\": \"Castor's Pizza - Batch1\",\n    \"direccion\": \"Zona 1, Guatemala\",\n    \"ubicacion\": { \"type\": \"Point\", \"coordinates\": [-90.52, 14.63] },\n    \"telefono\": \"5555-0001\",\n    \"horario\": { \"apertura\": \"09:00\", \"cierre\": \"21:00\" }\n  },\n  {\n    \"nombre\": \"Castor's Pizza - Batch2\",\n    \"direccion\": \"Zona 4, Guatemala\",\n    \"ubicacion\": { \"type\": \"Point\", \"coordinates\": [-90.51, 14.64] },\n    \"telefono\": \"5555-0002\",\n    \"horario\": { \"apertura\": \"10:00\", \"cierre\": \"23:00\" }\n  }\n]" }
+          }
+        },
+        {
+          "name": "Actualizar 1 restaurante (updateOne)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/restaurantes/{{restauranteId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"telefono\": \"5555-9999\",\n  \"horario\": { \"apertura\": \"08:00\", \"cierre\": \"23:00\" }\n}" }
+          }
+        },
+        {
+          "name": "Activar/desactivar muchos (updateMany)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/restaurantes/activar-muchos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ids\": [\"{{restauranteId}}\", \"{{restauranteId2}}\"],\n  \"activo\": false\n}" }
+          }
+        },
+        {
+          "name": "Eliminar 1 restaurante (deleteOne)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/restaurantes/{{restauranteId}}",
+            "description": "CUIDADO: Esto elimina el restaurante real. Mejor usar un ID de uno creado en las pruebas."
+          }
+        },
+        {
+          "name": "Eliminar muchos restaurantes (deleteMany)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/restaurantes/eliminar-muchos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ids\": [\"PEGAR_ID_BATCH1\", \"PEGAR_ID_BATCH2\"]\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Listar usuarios (filtro por rol)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/usuarios?limit=10&rol=admin", "host": ["{{baseUrl}}"], "path": ["usuarios"], "query": [{"key":"limit","value":"10"},{"key":"rol","value":"admin"}] } }
+        },
+        {
+          "name": "Obtener uno",
+          "request": { "method": "GET", "url": "{{baseUrl}}/usuarios/{{usuarioId}}" }
+        },
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/usuarios",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Ana García\",\n  \"email\": \"ana.garcia@castorspizza.com\",\n  \"passwordHash\": \"hash_demo_test\",\n  \"rol\": \"operador\"\n}" }
+          }
+        },
+        {
+          "name": "Actualizar usuario (updateOne)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Usuario 1 Actualizado\",\n  \"rol\": \"gerente\"\n}" }
+          }
+        },
+        {
+          "name": "Eliminar usuario (deleteOne)",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/usuarios/{{usuarioId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Clientes",
+      "item": [
+        {
+          "name": "Listar clientes (filtro zona + activo)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/clientes?limit=5&activo=true", "host": ["{{baseUrl}}"], "path": ["clientes"], "query": [{"key":"limit","value":"5"},{"key":"activo","value":"true"}] } }
+        },
+        {
+          "name": "Obtener uno (con dirección embebida)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/clientes/{{clienteId}}" }
+        },
+        {
+          "name": "Historial de ordenes ($lookup a ordenes + restaurante)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/clientes/{{clienteId}}/ordenes?limit=5", "host": ["{{baseUrl}}"], "path": ["clientes","{{clienteId}}","ordenes"], "query": [{"key":"limit","value":"5"}] } }
+        },
+        {
+          "name": "Crear cliente (con dirección embebida)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/clientes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"María López Test\",\n  \"email\": \"maria.lopez.test@mail.com\",\n  \"telefono\": \"5555-0000\",\n  \"direccion\": {\n    \"calle\": \"Avenida Reforma\",\n    \"numero\": \"10-50\",\n    \"zona\": \"10\",\n    \"ciudad\": \"Guatemala\",\n    \"departamento\": \"Guatemala\",\n    \"codigoPostal\": \"01010\"\n  },\n  \"tags\": [\"nuevo\"]\n}" }
+          }
+        },
+        {
+          "name": "Actualizar cliente (updateOne)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/clientes/{{clienteId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"telefono\": \"5555-1111\"\n}" }
+          }
+        },
+        {
+          "name": "Actualizar dirección embebida",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/clientes/{{clienteId}}/direccion",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"calle\": \"6a Avenida\",\n  \"numero\": \"5-20\",\n  \"zona\": \"1\",\n  \"ciudad\": \"Guatemala\",\n  \"departamento\": \"Guatemala\",\n  \"codigoPostal\": \"01001\"\n}" }
+          }
+        },
+        {
+          "name": "Agregar tags ($addToSet)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/clientes/{{clienteId}}/tags",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"operation\": \"add\",\n  \"tags\": [\"vip\", \"frecuente\"]\n}" }
+          }
+        },
+        {
+          "name": "Quitar tags ($pull)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/clientes/{{clienteId}}/tags",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"operation\": \"remove\",\n  \"tags\": [\"vip\"]\n}" }
+          }
+        },
+        {
+          "name": "Eliminar cliente (deleteOne)",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/clientes/{{clienteId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Menu",
+      "item": [
+        {
+          "name": "Listar menú (filtro por tag - multikey index)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/menu?limit=10&tag=pizza", "host": ["{{baseUrl}}"], "path": ["menu"], "query": [{"key":"limit","value":"10"},{"key":"tag","value":"pizza"}] } }
+        },
+        {
+          "name": "Buscar por nombre",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/menu/buscar?q=Producto", "host": ["{{baseUrl}}"], "path": ["menu","buscar"], "query": [{"key":"q","value":"Producto"}] } }
+        },
+        {
+          "name": "Obtener uno",
+          "request": { "method": "GET", "url": "{{baseUrl}}/menu/{{menuId}}" }
+        },
+        {
+          "name": "Crear 1 item con tamaños embebidos",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/menu",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Pizza Hawaiana Test\",\n  \"descripcion\": \"Pizza con piña y jamón\",\n  \"tamanos\": [\n    { \"nombre\": \"Pequeña\", \"precioVenta\": 45, \"costoProduccion\": 20, \"margenEstimado\": 55 },\n    { \"nombre\": \"Mediana\", \"precioVenta\": 65, \"costoProduccion\": 30, \"margenEstimado\": 54 },\n    { \"nombre\": \"Grande\", \"precioVenta\": 85, \"costoProduccion\": 40, \"margenEstimado\": 53 }\n  ],\n  \"precioPuntos\": 150,\n  \"tags\": [\"pizza\", \"hawaiana\"]\n}" }
+          }
+        },
+        {
+          "name": "Crear muchos items (insertMany)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/menu/muchos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "[\n  {\n    \"nombre\": \"Breadsticks de Ajo\",\n    \"descripcion\": \"Pan de ajo crujiente\",\n    \"tamanos\": [{ \"nombre\": \"Porción\", \"precioVenta\": 25, \"costoProduccion\": 10, \"margenEstimado\": 60 }],\n    \"precioPuntos\": 50,\n    \"tags\": [\"acompanamiento\", \"rapido\"]\n  },\n  {\n    \"nombre\": \"Limonada Natural\",\n    \"descripcion\": \"Limonada recién exprimida\",\n    \"tamanos\": [{ \"nombre\": \"Vaso\", \"precioVenta\": 15, \"costoProduccion\": 5, \"margenEstimado\": 67 }],\n    \"precioPuntos\": 30,\n    \"tags\": [\"bebida\", \"natural\"]\n  }\n]" }
+          }
+        },
+        {
+          "name": "Actualizar item (updateOne)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/menu/{{menuId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"descripcion\": \"Descripción actualizada del Producto 1\",\n  \"precioPuntos\": 250\n}" }
+          }
+        },
+        {
+          "name": "Agregar tamaños embebidos ($push)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/menu/{{menuId}}/tamanos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"op\": \"add\",\n  \"tamanos\": [\n    { \"nombre\": \"Familiar\", \"precioVenta\": 120, \"costoProduccion\": 55, \"margenEstimado\": 54 }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "Quitar tamaños embebidos ($pull)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/menu/{{menuId}}/tamanos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"op\": \"remove\",\n  \"tamanos\": [\n    { \"nombre\": \"Familiar\" }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "Agregar tags ($addToSet)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/menu/{{menuId}}/tags",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"operation\": \"add\",\n  \"tags\": [\"promo\", \"2x1\"]\n}" }
+          }
+        },
+        {
+          "name": "Quitar tags ($pull)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/menu/{{menuId}}/tags",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"operation\": \"remove\",\n  \"tags\": [\"promo\"]\n}" }
+          }
+        },
+        {
+          "name": "Eliminar item (deleteOne)",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/menu/{{menuId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Ordenes",
+      "item": [
+        {
+          "name": "Listar ordenes (filtros + sort + paginación)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/ordenes?limit=5&sort=-fechaCreacion&estado=entregado", "host": ["{{baseUrl}}"], "path": ["ordenes"], "query": [{"key":"limit","value":"5"},{"key":"sort","value":"-fechaCreacion"},{"key":"estado","value":"entregado"}] } }
+        },
+        {
+          "name": "Listar por cliente",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/ordenes?limit=5&clienteId={{clienteId}}", "host": ["{{baseUrl}}"], "path": ["ordenes"], "query": [{"key":"limit","value":"5"},{"key":"clienteId","value":"{{clienteId}}"}] } }
+        },
+        {
+          "name": "Listar por restaurante",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/ordenes?limit=5&restauranteId={{restauranteId}}", "host": ["{{baseUrl}}"], "path": ["ordenes"], "query": [{"key":"limit","value":"5"},{"key":"restauranteId","value":"{{restauranteId}}"}] } }
+        },
+        {
+          "name": "Obtener una orden",
+          "request": { "method": "GET", "url": "{{baseUrl}}/ordenes/{{ordenId}}" }
+        },
+        {
+          "name": "Detalle con $lookup (cliente + restaurante)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/ordenes/{{ordenId}}/detalle" }
+        },
+        {
+          "name": "Crear orden (TRANSACCIÓN 1: crear + sumar puntos fidelidad)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/ordenes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"clienteId\": \"{{clienteId}}\",\n  \"restauranteId\": \"{{restauranteId}}\",\n  \"items\": [\n    {\n      \"menuId\": \"{{menuId}}\",\n      \"nombreProducto\": \"Producto 1\",\n      \"tamano\": \"Grande\",\n      \"precioUnitario\": 50,\n      \"costoUnitario\": 25,\n      \"cantidad\": 2,\n      \"subtotal\": 100\n    },\n    {\n      \"menuId\": \"{{menuId2}}\",\n      \"nombreProducto\": \"Producto 10\",\n      \"tamano\": \"Mediana\",\n      \"precioUnitario\": 35,\n      \"costoUnitario\": 18,\n      \"cantidad\": 1,\n      \"subtotal\": 35\n    }\n  ],\n  \"total\": 135,\n  \"propina\": 15,\n  \"metodoPago\": \"tarjeta\"\n}" }
+          }
+        },
+        {
+          "name": "Pagar con puntos (TRANSACCIÓN 4: verificar + descontar puntos)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/ordenes/pagar-con-puntos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"clienteId\": \"{{clienteId}}\",\n  \"restauranteId\": \"{{restauranteId}}\",\n  \"items\": [\n    {\n      \"menuId\": \"{{menuId}}\",\n      \"nombreProducto\": \"Producto 1\",\n      \"tamano\": \"Mediana\",\n      \"precioUnitario\": 0,\n      \"costoUnitario\": 18,\n      \"cantidad\": 1,\n      \"subtotal\": 0\n    }\n  ],\n  \"totalPuntos\": 100\n}" }
+          }
+        },
+        {
+          "name": "Actualizar estado orden (updateOne)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/ordenes/{{ordenId}}/estado",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"entregado\"\n}" }
+          }
+        },
+        {
+          "name": "Actualizar estado muchas ordenes (updateMany)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/ordenes/actualizar-estado-muchos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"estadoActual\": \"pendiente\",\n  \"estadoNuevo\": \"en_preparacion\"\n}" }
+          }
+        },
+        {
+          "name": "Eliminar orden (deleteOne)",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/ordenes/{{ordenId}}" }
+        },
+        {
+          "name": "Eliminar muchas ordenes (deleteMany)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/ordenes/eliminar-muchos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ids\": [\"PEGAR_ID_1\", \"PEGAR_ID_2\"]\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Listar reviews (filtros + paginación)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/reviews?limit=5&minEstrellas=4&sort=-estrellas", "host": ["{{baseUrl}}"], "path": ["reviews"], "query": [{"key":"limit","value":"5"},{"key":"minEstrellas","value":"4"},{"key":"sort","value":"-estrellas"}] } }
+        },
+        {
+          "name": "Listar por restaurante",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/reviews?limit=5&restauranteId={{restauranteId}}", "host": ["{{baseUrl}}"], "path": ["reviews"], "query": [{"key":"limit","value":"5"},{"key":"restauranteId","value":"{{restauranteId}}"}] } }
+        },
+        {
+          "name": "Buscar por texto ($text search en comentario)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/reviews/buscar?q=perfecto", "host": ["{{baseUrl}}"], "path": ["reviews","buscar"], "query": [{"key":"q","value":"perfecto"}] } }
+        },
+        {
+          "name": "Obtener una review",
+          "request": { "method": "GET", "url": "{{baseUrl}}/reviews/{{reviewId}}" }
+        },
+        {
+          "name": "Detalle con $lookup (cliente + restaurante + orden)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/reviews/{{reviewId}}/detalle" }
+        },
+        {
+          "name": "Crear review (TRANSACCIÓN 2: verificar orden entregada)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/reviews",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"clienteId\": \"{{clienteId}}\",\n  \"restauranteId\": \"{{restauranteId}}\",\n  \"ordenId\": \"{{ordenId}}\",\n  \"estrellas\": 5,\n  \"comentario\": \"Excelente pizza, muy deliciosa y rápida entrega. El servicio fue perfecto.\",\n  \"tags\": [\"rapido\", \"delicioso\", \"recomendado\"]\n}" }
+          }
+        },
+        {
+          "name": "Actualizar review (updateOne)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/reviews/{{reviewId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"comentario\": \"Actualizado: muy buena experiencia en general\",\n  \"estrellas\": 4\n}" }
+          }
+        },
+        {
+          "name": "Agregar tags a review ($addToSet)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/reviews/{{reviewId}}/tags",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"operation\": \"add\",\n  \"tags\": [\"recomendado\", \"volveria\"]\n}" }
+          }
+        },
+        {
+          "name": "Quitar tags de review ($pull)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/reviews/{{reviewId}}/tags",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"operation\": \"remove\",\n  \"tags\": [\"volveria\"]\n}" }
+          }
+        },
+        {
+          "name": "Eliminar review (deleteOne)",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/reviews/{{reviewId}}" }
+        },
+        {
+          "name": "Eliminar muchas reviews (deleteMany)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/reviews/eliminar-muchos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ids\": [\"PEGAR_ID_1\", \"PEGAR_ID_2\"]\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reportes (Aggregation Pipelines)",
+      "item": [
+        {
+          "name": "Platillo más vendido ($unwind + $group + $sort)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/reportes/platillo-mas-vendido?limit=5", "host": ["{{baseUrl}}"], "path": ["reportes","platillo-mas-vendido"], "query": [{"key":"limit","value":"5"}] } }
+        },
+        {
+          "name": "Restaurante mejor calificado ($group + $avg + $lookup)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/reportes/restaurante-mejor-calificado" }
+        },
+        {
+          "name": "Margen por sede ($unwind + ventas vs costos + $lookup)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/reportes/margen-por-sede" }
+        },
+        {
+          "name": "Cliente más frecuente ($group + $lookup)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/reportes/cliente-mas-frecuente?limit=5", "host": ["{{baseUrl}}"], "path": ["reportes","cliente-mas-frecuente"], "query": [{"key":"limit","value":"5"}] } }
+        },
+        {
+          "name": "Ventas por mes ($group + $dateToString)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/reportes/ventas-por-mes" }
+        },
+        {
+          "name": "Ordenes por restaurante ($group + $lookup)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/reportes/ordenes-por-restaurante" }
+        },
+        {
+          "name": "Conteo de colección (countDocuments)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/reportes/conteo/ordenes" }
+        },
+        {
+          "name": "Conteo de clientes",
+          "request": { "method": "GET", "url": "{{baseUrl}}/reportes/conteo/clientes" }
+        },
+        {
+          "name": "Distinct tags del menú",
+          "request": { "method": "GET", "url": "{{baseUrl}}/reportes/distinct/menu/tags" }
+        },
+        {
+          "name": "Distinct estados de ordenes",
+          "request": { "method": "GET", "url": "{{baseUrl}}/reportes/distinct/ordenes/estado" }
+        }
+      ]
+    },
+    {
+      "name": "Índices",
+      "item": [
+        {
+          "name": "Listar índices de ordenes",
+          "request": { "method": "GET", "url": "{{baseUrl}}/indices/listar/ordenes" }
+        },
+        {
+          "name": "Listar índices de restaurante",
+          "request": { "method": "GET", "url": "{{baseUrl}}/indices/listar/restaurante" }
+        },
+        {
+          "name": "Listar índices de menu",
+          "request": { "method": "GET", "url": "{{baseUrl}}/indices/listar/menu" }
+        },
+        {
+          "name": "Listar índices de reviews",
+          "request": { "method": "GET", "url": "{{baseUrl}}/indices/listar/reviews" }
+        },
+        {
+          "name": "Listar índices de clientes",
+          "request": { "method": "GET", "url": "{{baseUrl}}/indices/listar/clientes" }
+        },
+        {
+          "name": "Crear índice geoespacial (2dsphere)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/indices/crear",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"coleccion\": \"restaurante\",\n  \"keys\": { \"ubicacion\": \"2dsphere\" }\n}" }
+          }
+        },
+        {
+          "name": "Crear índice compuesto (ordenes)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/indices/crear",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"coleccion\": \"ordenes\",\n  \"keys\": { \"clienteId\": 1, \"fechaCreacion\": -1 }\n}" }
+          }
+        },
+        {
+          "name": "Crear índice TEXT (reviews.comentario)",
+          "request": { "method": "POST", "url": "{{baseUrl}}/indices/crear-texto" }
+        },
+        {
+          "name": "Crear índice SIMPLE (clientes.email)",
+          "request": { "method": "POST", "url": "{{baseUrl}}/indices/crear-simple" }
+        },
+        {
+          "name": "Crear índice genérico",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/indices/crear",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"coleccion\": \"clientes\",\n  \"keys\": { \"nombre\": 1 },\n  \"options\": { \"name\": \"nombre_1\" }\n}" }
+          }
+        },
+        {
+          "name": "Eliminar índice",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/indices/eliminar",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"coleccion\": \"clientes\",\n  \"indexName\": \"nombre_1\"\n}" }
+          }
+        },
+        {
+          "name": "Explain query (executionStats)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/indices/explain",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"coleccion\": \"ordenes\",\n  \"filter\": { \"estado\": \"entregado\" },\n  \"sort\": { \"fechaCreacion\": -1 }\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "GridFS (Archivos)",
+      "item": [
+        {
+          "name": "Upload archivo",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/archivos/upload",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "archivo", "type": "file", "src": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar archivos",
+          "request": { "method": "GET", "url": "{{baseUrl}}/archivos" }
+        },
+        {
+          "name": "Descargar archivo",
+          "request": { "method": "GET", "url": "{{baseUrl}}/archivos/{{archivoId}}" }
+        },
+        {
+          "name": "Eliminar archivo",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/archivos/{{archivoId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Bulk Operations",
+      "item": [
+        {
+          "name": "BulkWrite en menu (insert + update)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/bulk/menu",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"operations\": [\n    {\n      \"insertOne\": {\n        \"document\": {\n          \"nombre\": \"Bulk Pizza Especial\",\n          \"descripcion\": \"Creada via bulkWrite\",\n          \"tamanos\": [{ \"nombre\": \"Grande\", \"precioVenta\": 90, \"costoProduccion\": 40, \"margenEstimado\": 55 }],\n          \"precioPuntos\": 180,\n          \"tags\": [\"bulk\", \"pizza\"],\n          \"activo\": true\n        }\n      }\n    },\n    {\n      \"updateOne\": {\n        \"filter\": { \"nombre\": \"Bulk Pizza Especial\" },\n        \"update\": { \"$set\": { \"descripcion\": \"Actualizada via bulkWrite\" } }\n      }\n    }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "BulkWrite en menu (delete cleanup)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/bulk/menu",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"operations\": [\n    {\n      \"deleteOne\": {\n        \"filter\": { \"nombre\": \"Bulk Pizza Especial\" }\n      }\n    }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "BulkWrite en clientes (updateMany)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/bulk/clientes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"operations\": [\n    {\n      \"updateMany\": {\n        \"filter\": { \"tags\": \"bulk_test\" },\n        \"update\": { \"$pull\": { \"tags\": \"bulk_test\" } }\n      }\n    }\n  ]\n}" }
+          }
+        }
+      ]
+    }
+  ]
+}
