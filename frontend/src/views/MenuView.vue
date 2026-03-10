@@ -16,11 +16,13 @@
     </div>
 
     <div v-if="error" class="alert error">{{ error }}</div>
+    <div v-if="success" class="alert success">{{ success }}</div>
 
     <DataTable :columns="columns" :items="items" :skip="skip" :limit="limit" :total="total" @page-change="onPageChange">
       <template #toolbar="{ selected, count }">
         <button class="btn btn-sm" :disabled="count !== 1" @click="openEdit(selected[0])">Editar</button>
         <button class="btn btn-sm" :disabled="count !== 1" @click="openTags(selected[0])">Tags</button>
+        <button class="btn btn-sm btn-bulk" :disabled="count < 2" @click="openBulkStatus(selected)">Cambiar estado{{ count > 1 ? ` (${count})` : '' }}</button>
         <button class="btn btn-sm btn-danger" :disabled="count === 0" @click="confirmDeleteSelected(selected)">Eliminar{{ count > 0 ? ` (${count})` : '' }}</button>
       </template>
     </DataTable>
@@ -102,6 +104,22 @@
       </div>
     </ModalForm>
 
+    <!-- BulkWrite: Cambio masivo de estado -->
+    <ModalForm v-if="showBulkModal" title="Cambiar estado en masa (BulkWrite)" @close="showBulkModal = false">
+      <p>Se actualizarán <strong>{{ bulkSelected.length }}</strong> platillos en una sola operación.</p>
+      <div class="form-group">
+        <label>Nuevo estado</label>
+        <select v-model="bulkActivo">
+          <option :value="true">Activo</option>
+          <option :value="false">Inactivo</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button class="btn" @click="showBulkModal = false">Cancelar</button>
+        <button class="btn btn-primary" @click="executeBulkStatus">Aplicar</button>
+      </div>
+    </ModalForm>
+
     <ConfirmModal v-if="confirmAction" :title="confirmAction.title" :message="confirmAction.message"
       :confirmText="confirmAction.confirmText" :danger="confirmAction.danger"
       @confirm="executeConfirm" @cancel="confirmAction = null" />
@@ -120,6 +138,7 @@ const skip = ref(0)
 const limit = 20
 const total = ref(0)
 const error = ref('')
+const success = ref('')
 const searchTerm = ref('')
 const filterTag = ref('')
 const filtroActivo = ref('')
@@ -137,6 +156,10 @@ const showTagsModal = ref(false)
 const currentTagsId = ref(null)
 const currentTags = ref([])
 const newTag = ref('')
+
+const showBulkModal = ref(false)
+const bulkSelected = ref([])
+const bulkActivo = ref(true)
 
 const columns = [
   { key: 'nombre', label: 'Nombre' },
@@ -229,6 +252,30 @@ async function remove(id) {
   catch (e) { error.value = e.response?.data?.error || e.message }
 }
 
+function openBulkStatus(selected) {
+  bulkSelected.value = selected
+  bulkActivo.value = true
+  showBulkModal.value = true
+}
+
+async function executeBulkStatus() {
+  error.value = ''
+  success.value = ''
+  const operations = bulkSelected.value.map(item => ({
+    updateOne: {
+      filter: { _id: item._id },
+      update: { $set: { activo: bulkActivo.value } }
+    }
+  }))
+  try {
+    const { data } = await api.post('/bulk/menu', { operations })
+    showBulkModal.value = false
+    success.value = `BulkWrite: ${data.modifiedCount} platillo(s) actualizados a "${bulkActivo.value ? 'activo' : 'inactivo'}"`
+    setTimeout(() => { success.value = '' }, 4000)
+    load()
+  } catch (e) { error.value = e.response?.data?.error || e.message }
+}
+
 onMounted(load)
 </script>
 
@@ -237,6 +284,9 @@ onMounted(load)
 .size-field { flex: 1; min-width: 0; }
 .size-field input { width: 100%; }
 .input-readonly { background: #f0f0f0; color: #666; }
+.btn-bulk { background: #2196f3; color: #fff; border: none; }
+.btn-bulk:hover:not(:disabled) { background: #1976d2; }
+.alert.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; }
 .size-display { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
 .tags-list { display: flex; flex-wrap: wrap; gap: 6px; }
 .tag { background: #e94560; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.82rem; display: flex; align-items: center; gap: 4px; }
