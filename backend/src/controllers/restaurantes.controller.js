@@ -27,13 +27,13 @@ exports.listar = async (req, res) => {
 
 exports.cercanos = async (req, res) => {
   try {
-    const { lng, lat, maxDist } = req.query;
+    const { lng, lat, maxDistance } = req.query;
     if (!lng || !lat) return res.status(400).json({ error: 'lng y lat son requeridos' });
     const docs = await col().find({
       ubicacion: {
         $near: {
           $geometry: { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] },
-          $maxDistance: parseInt(maxDist) || 5000
+          $maxDistance: parseInt(maxDistance) || 5000
         }
       }
     }).limit(parseInt(req.query.limit) || 10).toArray();

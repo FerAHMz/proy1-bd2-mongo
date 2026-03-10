@@ -100,40 +100,68 @@ exports.crear = async (req, res) => {
   }
 };
 
-// TRANSACCIÓN 4: Pagar con puntos
+// TRANSACCIÓN 4: Pagar con puntos (orden existente)
 exports.pagarConPuntos = async (req, res) => {
   const session = getClient().startSession();
   try {
-    let insertedId;
+    let puntosRequeridos = 0;
     await session.withTransaction(async () => {
-      const { clienteId, restauranteId, items, totalPuntos } = req.body;
-      const cid = new ObjectId(clienteId);
+      const { ordenId } = req.body;
+      
+      if (!ordenId) throw new Error('Debe especificar ordenId');
+      
+      const oid = new ObjectId(ordenId);
 
-      const cliente = await getDB().collection('clientes').findOne({ _id: cid }, { session });
+      // Obtener la orden
+      const orden = await col().findOne({ _id: oid }, { session });
+      if (!orden) throw new Error('Orden no encontrada');
+      
+      // Verificar que la orden no esté ya pagada con puntos
+      if (orden.metodoPago === 'puntos') {
+        throw new Error('Esta orden ya fue pagada con puntos');
+      }
+
+      // Calcular puntos requeridos basándose en el precioPuntos de cada producto
+      puntosRequeridos = 0;
+      for (const item of orden.items) {
+        const menuItem = await getDB().collection('menu').findOne({ _id: item.menuId }, { session });
+        if (!menuItem || !menuItem.precioPuntos) {
+          throw new Error(`El producto "${item.nombreProducto}" no tiene precio en puntos configurado`);
+        }
+        puntosRequeridos += menuItem.precioPuntos * item.cantidad;
+      }
+
+      // Obtener el cliente
+      const cliente = await getDB().collection('clientes').findOne({ _id: orden.clienteId }, { session });
       if (!cliente) throw new Error('Cliente no encontrado');
-      if (cliente.puntosFidelidad < totalPuntos) throw new Error('Puntos insuficientes');
+      
+      // Verificar puntos suficientes
+      if (cliente.puntosFidelidad < puntosRequeridos) {
+        throw new Error(`Puntos insuficientes. El cliente tiene ${cliente.puntosFidelidad} puntos y se necesitan ${puntosRequeridos}`);
+      }
 
-      const orden = {
-        clienteId: cid,
-        restauranteId: new ObjectId(restauranteId),
-        items: items.map(it => ({ ...it, menuId: new ObjectId(it.menuId) })),
-        total: 0,
-        metodoPago: 'puntos',
-        puntosUsados: totalPuntos,
-        estado: 'pendiente',
-        fechaCreacion: new Date()
-      };
+      // Actualizar la orden para marcarla como pagada con puntos
+      await col().updateOne(
+        { _id: oid },
+        { 
+          $set: { 
+            metodoPago: 'puntos',
+            puntosUsados: puntosRequeridos,
+            estado: 'preparando',
+            fechaPagoPuntos: new Date()
+          } 
+        },
+        { session }
+      );
 
-      const result = await col().insertOne(orden, { session });
-      insertedId = result.insertedId;
-
+      // Descontar puntos del cliente
       await getDB().collection('clientes').updateOne(
-        { _id: cid },
-        { $inc: { puntosFidelidad: -totalPuntos } },
+        { _id: orden.clienteId },
+        { $inc: { puntosFidelidad: -puntosRequeridos } },
         { session }
       );
     });
-    res.status(201).json({ insertedId });
+    res.status(200).json({ message: 'Orden pagada con puntos exitosamente', puntosUsados: puntosRequeridos });
   } catch (err) {
     res.status(500).json({ error: err.message });
   } finally {

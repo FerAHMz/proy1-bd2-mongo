@@ -7,7 +7,8 @@ exports.listar = async (req, res) => {
   try {
     const { skip, limit, sort } = req.pagination;
     const filter = {};
-    if (req.query.activo !== undefined) filter.activo = req.query.activo === 'true';
+    if (req.query.nombre) filter.nombre = { $regex: req.query.nombre, $options: 'i' };
+    if (req.query.activo !== undefined) filter.activo = req.query.activo === 'true' ? { $ne: false } : false;
     if (req.query.zona) filter['direccion.zona'] = req.query.zona;
     if (req.query.tag) filter.tags = req.query.tag;
 

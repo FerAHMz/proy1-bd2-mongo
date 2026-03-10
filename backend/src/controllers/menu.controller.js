@@ -8,6 +8,7 @@ exports.listar = async (req, res) => {
     const { skip, limit, sort } = req.pagination;
     const filter = {};
     if (req.query.activo !== undefined) filter.activo = req.query.activo === 'true';
+    if (req.query.nombre) filter.nombre = { $regex: req.query.nombre, $options: 'i' };
     if (req.query.tag) filter.tags = req.query.tag;
     if (req.query.tags) filter.tags = { $all: req.query.tags.split(',') };
 
