@@ -104,19 +104,19 @@
       </div>
     </ModalForm>
 
-    <!-- BulkWrite: Cambio masivo de estado -->
-    <ModalForm v-if="showBulkModal" title="Cambiar estado en masa (BulkWrite)" @close="showBulkModal = false">
-      <p>Se actualizarán <strong>{{ bulkSelected.length }}</strong> platillos en una sola operación.</p>
-      <div class="form-group">
-        <label>Nuevo estado</label>
-        <select v-model="bulkActivo">
+    <!-- BulkWrite: estado individual por platillo -->
+    <ModalForm v-if="showBulkModal" title="Editar estado por platillo (BulkWrite)" @close="showBulkModal = false" width="500px">
+      <p style="margin-bottom: 12px">Asigna el estado de cada platillo individualmente. Se enviarán en una sola operación BulkWrite.</p>
+      <div v-for="item in bulkItems" :key="item._id" class="bulk-row">
+        <span class="bulk-nombre">{{ item.nombre }}</span>
+        <select v-model="item.activo" class="bulk-select">
           <option :value="true">Activo</option>
           <option :value="false">Inactivo</option>
         </select>
       </div>
-      <div class="form-actions">
+      <div class="form-actions" style="margin-top: 16px">
         <button class="btn" @click="showBulkModal = false">Cancelar</button>
-        <button class="btn btn-primary" @click="executeBulkStatus">Aplicar</button>
+        <button class="btn btn-primary" @click="executeBulkStatus">Aplicar ({{ bulkItems.length }} operaciones)</button>
       </div>
     </ModalForm>
 
@@ -158,8 +158,7 @@ const currentTags = ref([])
 const newTag = ref('')
 
 const showBulkModal = ref(false)
-const bulkSelected = ref([])
-const bulkActivo = ref(true)
+const bulkItems = ref([])
 
 const columns = [
   { key: 'nombre', label: 'Nombre' },
@@ -253,24 +252,23 @@ async function remove(id) {
 }
 
 function openBulkStatus(selected) {
-  bulkSelected.value = selected
-  bulkActivo.value = true
+  bulkItems.value = selected.map(item => ({ _id: item._id, nombre: item.nombre, activo: item.activo }))
   showBulkModal.value = true
 }
 
 async function executeBulkStatus() {
   error.value = ''
   success.value = ''
-  const operations = bulkSelected.value.map(item => ({
+  const operations = bulkItems.value.map(item => ({
     updateOne: {
       filter: { _id: item._id },
-      update: { $set: { activo: bulkActivo.value } }
+      update: { $set: { activo: item.activo } }
     }
   }))
   try {
     const { data } = await api.post('/bulk/menu', { operations })
     showBulkModal.value = false
-    success.value = `BulkWrite: ${data.modifiedCount} platillo(s) actualizados a "${bulkActivo.value ? 'activo' : 'inactivo'}"`
+    success.value = `BulkWrite: ${data.modifiedCount} platillo(s) actualizados`
     setTimeout(() => { success.value = '' }, 4000)
     load()
   } catch (e) { error.value = e.response?.data?.error || e.message }
@@ -286,6 +284,9 @@ onMounted(load)
 .input-readonly { background: #f0f0f0; color: #666; }
 .btn-bulk { background: #2196f3; color: #fff; border: none; }
 .btn-bulk:hover:not(:disabled) { background: #1976d2; }
+.bulk-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+.bulk-nombre { flex: 1; font-size: 0.95rem; }
+.bulk-select { width: 120px; }
 .alert.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; }
 .size-display { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
 .tags-list { display: flex; flex-wrap: wrap; gap: 6px; }
