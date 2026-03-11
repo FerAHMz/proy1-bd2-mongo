@@ -9,6 +9,7 @@ const routes = [
   { path: '/ordenes', name: 'Ordenes', component: () => import('../views/OrdenesView.vue') },
   { path: '/reviews', name: 'Reviews', component: () => import('../views/ReviewsView.vue') },
   { path: '/reportes', name: 'Reportes', component: () => import('../views/ReportesView.vue') },
+  { path: '/archivos', name: 'Archivos', component: () => import('../views/ArchivosView.vue') },
 ]
 
 const router = createRouter({

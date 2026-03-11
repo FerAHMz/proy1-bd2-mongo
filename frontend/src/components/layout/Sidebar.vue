@@ -28,6 +28,9 @@
       <router-link to="/reportes" class="nav-item">
         <BarChart3 :size="18" /> Reportes
       </router-link>
+      <router-link to="/archivos" class="nav-item">
+        <FileUp :size="18" /> Archivos
+      </router-link>
     </nav>
   </aside>
 </template>
@@ -35,7 +38,7 @@
 <script setup>
 import {
   LayoutDashboard, Store, UserCog, Users, UtensilsCrossed,
-  ClipboardList, Star, BarChart3
+  ClipboardList, Star, BarChart3, FileUp
 } from 'lucide-vue-next'
 </script>
 
